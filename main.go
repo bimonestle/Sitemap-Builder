@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"net/url"
@@ -52,24 +53,28 @@ func main() {
 	base := baseURL.String()
 	// fmt.Println("Base URL: ", base) // TESTING
 
-	links, _ := link.Parse(resp.Body)
-	var hrefs []string
+	pages := hrefs(resp.Body, base)
+	for _, page := range pages {
+		fmt.Println(page) // TESTING
+	}
+}
+
+func hrefs(body io.Reader, base string) []string {
+	links, _ := link.Parse(body)
+	var ret []string
 	for _, l := range links {
 		// fmt.Println("The parsed link from a response Body: ", l) // TESTING
 		switch {
 		// for links without base URL
 		// example: "/about-us"
 		case strings.HasPrefix(l.Href, "/"):
-			hrefs = append(hrefs, base+l.Href)
+			ret = append(ret, base+l.Href)
 		// for links which begins with "http"
 		// example: "https://twitter.com/...."
 		// example: "https://thisdomain.com/..."
 		case strings.HasPrefix(l.Href, "http"):
-			hrefs = append(hrefs, l.Href)
+			ret = append(ret, l.Href)
 		}
 	}
-	for _, href := range hrefs {
-		fmt.Println(href) // TESTING
-	}
-
+	return ret
 }
