@@ -24,38 +24,9 @@ func main() {
 
 	fmt.Println("The urlFlag: ", *urlFlag) // TESTING
 
-	// 1. GET the webpage.
-	resp, err := http.Get(*urlFlag)
-	if err != nil {
-		log.Println(err)
-		panic(err)
-	}
-	defer resp.Body.Close()
-	// io.Copy(os.Stdout, resp.Body) // for testing purpose
-
-	// 2. Parse all the links from an url
-	// Get the URL from a requested URL
-	// Example:
-	// 		URL: "https://abc.com/efg/"
-	// 		Requested URL: "https://abc.com/efg/"
-	reqURL := resp.Request.URL
-	fmt.Println("Request URL: ", reqURL.String()) // TESTING
-
-	// Get the base form of URL from a URL
-	// Example:
-	// 		URL : "https://abc.com/efg/hi"
-	// 		Requested URL: "https://abc.com/efg/hi"
-	// 		Base URL: "https://abc.com"
-	baseURL := &url.URL{
-		Scheme: reqURL.Scheme, // "https:""
-		Host:   reqURL.Host,   // "//some-domain.com"
-	}
-	base := baseURL.String()
-	// fmt.Println("Base URL: ", base) // TESTING
-
-	pages := hrefs(resp.Body, base)
+	pages := get(*urlFlag)
 	for _, page := range pages {
-		fmt.Println(page) // TESTING
+		fmt.Println("The page is: ", page) // TESTING
 	}
 }
 
@@ -77,4 +48,37 @@ func hrefs(body io.Reader, base string) []string {
 		}
 	}
 	return ret
+}
+
+// 1. GET the webpage.
+func get(urlStr string) []string {
+	resp, err := http.Get(urlStr)
+	if err != nil {
+		log.Println(err)
+		panic(err)
+	}
+	defer resp.Body.Close()
+	// io.Copy(os.Stdout, resp.Body) // for testing purpose
+
+	// 2. Parse all the links from an url
+	// Get the URL from a requested URL
+	// Example:
+	// 		URL: "https://abc.com/efg/"
+	// 		Requested URL: "https://abc.com/efg/"
+	reqURL := resp.Request.URL
+	// fmt.Println("Request URL: ", reqURL.String()) // TESTING
+
+	// Get the base form of URL from a URL
+	// Example:
+	// 		URL : "https://abc.com/efg/hi"
+	// 		Requested URL: "https://abc.com/efg/hi"
+	// 		Base URL: "https://abc.com"
+	baseURL := &url.URL{
+		Scheme: reqURL.Scheme, // "https:""
+		Host:   reqURL.Host,   // "//some-domain.com"
+	}
+	base := baseURL.String()
+	// fmt.Println("Base URL: ", base) // TESTING
+
+	return hrefs(resp.Body, base)
 }
