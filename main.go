@@ -30,6 +30,40 @@ func main() {
 	}
 }
 
+// 1. GET the webpage.
+func get(urlStr string) []string {
+	resp, err := http.Get(urlStr)
+	if err != nil {
+		log.Println(err)
+		panic(err)
+	}
+	defer resp.Body.Close()
+	// io.Copy(os.Stdout, resp.Body) // for testing purpose
+
+	// Get the URL from a requested URL
+	// Example:
+	// 		URL: "https://abc.com/efg/"
+	// 		Requested URL: "https://abc.com/efg/"
+	reqURL := resp.Request.URL
+	// fmt.Println("Request URL: ", reqURL.String()) // TESTING
+
+	// Get the base form of URL from a URL
+	// Example:
+	// 		URL : "https://abc.com/efg/hi"
+	// 		Requested URL: "https://abc.com/efg/hi"
+	// 		Base URL: "https://abc.com"
+	baseURL := &url.URL{
+		Scheme: reqURL.Scheme, // "https:""
+		Host:   reqURL.Host,   // "//some-domain.com"
+	}
+	base := baseURL.String()
+	// fmt.Println("Base URL: ", base) // TESTING
+
+	links := hrefs(resp.Body, base)
+	return filter(base, links)
+}
+
+// 2. Parse all the links from an url
 func hrefs(body io.Reader, base string) []string {
 	links, _ := link.Parse(body)
 	var ret []string
@@ -50,35 +84,15 @@ func hrefs(body io.Reader, base string) []string {
 	return ret
 }
 
-// 1. GET the webpage.
-func get(urlStr string) []string {
-	resp, err := http.Get(urlStr)
-	if err != nil {
-		log.Println(err)
-		panic(err)
+// 4. filter out any links with a different domain
+func filter(base string, links []string) []string {
+	var ret []string
+	for _, link := range links {
+
+		// Tests if link begins with the "base" prefix
+		if strings.HasPrefix(link, base) {
+			ret = append(ret, link)
+		}
 	}
-	defer resp.Body.Close()
-	// io.Copy(os.Stdout, resp.Body) // for testing purpose
-
-	// 2. Parse all the links from an url
-	// Get the URL from a requested URL
-	// Example:
-	// 		URL: "https://abc.com/efg/"
-	// 		Requested URL: "https://abc.com/efg/"
-	reqURL := resp.Request.URL
-	// fmt.Println("Request URL: ", reqURL.String()) // TESTING
-
-	// Get the base form of URL from a URL
-	// Example:
-	// 		URL : "https://abc.com/efg/hi"
-	// 		Requested URL: "https://abc.com/efg/hi"
-	// 		Base URL: "https://abc.com"
-	baseURL := &url.URL{
-		Scheme: reqURL.Scheme, // "https:""
-		Host:   reqURL.Host,   // "//some-domain.com"
-	}
-	base := baseURL.String()
-	// fmt.Println("Base URL: ", base) // TESTING
-
-	return hrefs(resp.Body, base)
+	return ret
 }
