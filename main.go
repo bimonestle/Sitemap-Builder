@@ -60,7 +60,7 @@ func get(urlStr string) []string {
 	// fmt.Println("Base URL: ", base) // TESTING
 
 	links := hrefs(resp.Body, base)
-	return filter(base, links)
+	return filter(links, withPrefix(base))
 }
 
 // 2. Parse all the links from an url
@@ -85,14 +85,20 @@ func hrefs(body io.Reader, base string) []string {
 }
 
 // 4. filter out any links with a different domain
-func filter(base string, links []string) []string {
+func filter(links []string, keepFn func(string) bool) []string {
 	var ret []string
 	for _, link := range links {
 
 		// Tests if link begins with the "base" prefix
-		if strings.HasPrefix(link, base) {
+		if keepFn(link) {
 			ret = append(ret, link)
 		}
 	}
 	return ret
+}
+
+func withPrefix(pfx string) func(string) bool {
+	return func(link string) bool {
+		return strings.HasPrefix(link, pfx)
+	}
 }
