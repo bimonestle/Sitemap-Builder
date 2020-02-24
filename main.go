@@ -20,14 +20,54 @@ import (
 // 6. Print out XML
 func main() {
 	urlFlag := flag.String("url", "https://gophercises.com/", "The url that you want to build a sitemap for")
+	maxDepth := flag.Int("depth", 10, "the maximum number of links depth to traverse")
 	flag.Parse()
 
-	fmt.Println("The urlFlag: ", *urlFlag) // TESTING
-
-	pages := get(*urlFlag)
+	// fmt.Println("The urlFlag: ", *urlFlag) // TESTING
+	pages := bfs(*urlFlag, *maxDepth)
 	for _, page := range pages {
-		fmt.Println("The page is: ", page) // TESTING
+		fmt.Println("The page is: ", page)
 	}
+
+	// pages := get(*urlFlag)
+	// for _, page := range pages {
+	// 	fmt.Println("The page is: ", page) // TESTING
+	// }
+}
+
+func bfs(urlStr string, maxDepth int) []string {
+	// A collection of url that we've seen
+	seen := make(map[string]struct{})
+
+	// To get the links on the page that we're in
+	var q map[string]struct{}
+
+	// To get the links on the next page
+	// or the page tha twe're not in yet
+	nq := map[string]struct{}{
+		urlStr: struct{}{},
+	}
+	for i := 0; i <= maxDepth; i++ {
+		q, nq = nq, make(map[string]struct{})
+		for url, _ := range q {
+
+			// If there is such "key" inside that map
+			// Or tell me if there's a value inside the key within this map
+			// True if there is such key, otherwise it'll be False
+			if _, ok := seen[url]; ok {
+				continue
+			}
+			seen[url] = struct{}{}
+			for _, link := range get(url) {
+				nq[link] = struct{}{}
+			}
+		}
+	}
+	var ret []string
+	for url, _ := range seen {
+		ret = append(ret, url)
+	}
+	return ret
 }
 
 // 1. GET the webpage.
