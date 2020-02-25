@@ -1,12 +1,14 @@
 package main
 
 import (
+	"encoding/xml"
 	"flag"
 	"fmt"
 	"io"
 	"log"
 	"net/http"
 	"net/url"
+	"os"
 	"strings"
 
 	"github.com/bimonestle/go-exercise-projects/04.HTML-Link-Parser/link"
@@ -18,6 +20,19 @@ import (
 // 4. filter out any links with a different domain
 // 5. Find all pages (BFS)
 // 6. Print out XML
+
+// The XML NameSpace
+const xmlns = "http://www.sitemaps.org/schemas/sitemap/0.9"
+
+type loc struct {
+	Value string `xml:"loc"`
+}
+
+type urlset struct {
+	Urls  []loc  `xml:"url"`
+	XmlNS string `xml:"xmlns, attr"`
+}
+
 func main() {
 	urlFlag := flag.String("url", "https://gophercises.com/", "The url that you want to build a sitemap for")
 	maxDepth := flag.Int("depth", 10, "the maximum number of links depth to traverse")
@@ -25,9 +40,27 @@ func main() {
 
 	// fmt.Println("The urlFlag: ", *urlFlag) // TESTING
 	pages := bfs(*urlFlag, *maxDepth)
-	for _, page := range pages {
-		fmt.Println("The page is: ", page)
+
+	// 6. Print out XML
+	toXML := urlset{
+		XmlNS: xmlns,
 	}
+	for _, page := range pages {
+		// fmt.Println("The page is: ", page)	// TESTING
+		toXML.Urls = append(toXML.Urls, loc{page})
+	}
+	// Print the XML Header
+	fmt.Println(xml.Header)
+
+	// Encode the XML
+	enc := xml.NewEncoder(os.Stdout)
+
+	// To make the XML code legible / neat
+	enc.Indent("", "  ")
+	if err := enc.Encode(toXML); err != nil {
+		panic(err)
+	}
+	fmt.Println()
 
 	// pages := get(*urlFlag)
 	// for _, page := range pages {
@@ -35,6 +68,7 @@ func main() {
 	// }
 }
 
+// 5. Find all pages (BFS)
 func bfs(urlStr string, maxDepth int) []string {
 	// A collection of url that we've seen
 	seen := make(map[string]struct{})
@@ -48,7 +82,12 @@ func bfs(urlStr string, maxDepth int) []string {
 		urlStr: struct{}{},
 	}
 	for i := 0; i <= maxDepth; i++ {
+		fmt.Println("Layer: ", i)
+
 		q, nq = nq, make(map[string]struct{})
+		if len(q) == 0 {
+			break
+		}
 		for url, _ := range q {
 
 			// If there is such "key" inside that map
@@ -59,7 +98,11 @@ func bfs(urlStr string, maxDepth int) []string {
 			}
 			seen[url] = struct{}{}
 			for _, link := range get(url) {
-				nq[link] = struct{}{}
+
+				// Add url which we have not seen before
+				if _, ok := seen[link]; !ok {
+					nq[link] = struct{}{}
+				}
 			}
 		}
 	}

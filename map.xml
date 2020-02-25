@@ -1,0 +1,38 @@
+Layer:  0
+Layer:  1
+Layer:  2
+Layer:  3
+Layer:  4
+Layer:  5
+<?xml version="1.0" encoding="UTF-8"?>
+
+<urlset>
+  <url>
+    <loc>https://gophercises.com/demos/cyoa/new-york</loc>
+  </url>
+  <url>
+    <loc>https://gophercises.com/demos/cyoa/denver</loc>
+  </url>
+  <url>
+    <loc>https://gophercises.com/demos/cyoa/home</loc>
+  </url>
+  <url>
+    <loc>https://gophercises.com/demos/cyoa/mark-bates</loc>
+  </url>
+  <url>
+    <loc>https://gophercises.com/</loc>
+  </url>
+  <url>
+    <loc>https://gophercises.com</loc>
+  </url>
+  <url>
+    <loc>https://gophercises.com/demos/cyoa/debate</loc>
+  </url>
+  <url>
+    <loc>https://gophercises.com/demos/cyoa/sean-kelly</loc>
+  </url>
+  <url>
+    <loc>https://gophercises.com/demos/cyoa/</loc>
+  </url>
+  <attr xmlns="xmlns,">http://www.sitemaps.org/schemas/sitemap/0.9</attr>
+</urlset>
